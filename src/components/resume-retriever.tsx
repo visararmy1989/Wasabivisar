@@ -378,17 +378,17 @@ function EvaluationViewer({
           Review
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-7xl overflow-hidden border border-white/20 bg-[rgba(245,248,252,0.98)] p-0 shadow-[0_40px_120px_-56px_rgba(15,23,42,0.55)]">
-        <div className="grid max-h-[88vh] grid-cols-1 lg:grid-cols-[1.22fr_0.78fr]">
+      <DialogContent className="max-w-[calc(100vw-1rem)] overflow-hidden border border-white/20 bg-[rgba(245,248,252,0.98)] p-0 shadow-[0_40px_120px_-56px_rgba(15,23,42,0.55)] sm:max-w-7xl">
+        <div className="grid max-h-[92vh] grid-cols-1 lg:max-h-[88vh] lg:grid-cols-[1.22fr_0.78fr]">
           <div className="border-b border-slate-200/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(246,249,252,0.96))] lg:border-b-0 lg:border-r">
-            <DialogHeader className="border-b border-slate-200/80 bg-[linear-gradient(180deg,_rgba(250,252,255,0.98),_rgba(242,247,251,0.9))] px-7 py-6">
-              <div className="flex items-start justify-between gap-4">
+            <DialogHeader className="border-b border-slate-200/80 bg-[linear-gradient(180deg,_rgba(250,252,255,0.98),_rgba(242,247,251,0.9))] px-4 py-4 sm:px-7 sm:py-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="space-y-3">
                   <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 shadow-sm">
                     Application Review
                   </div>
                   <div>
-                    <DialogTitle className="text-[2rem] leading-none text-slate-950">{result.candidateName}</DialogTitle>
+                    <DialogTitle className="text-[1.5rem] leading-none text-slate-950 sm:text-[2rem]">{result.candidateName}</DialogTitle>
                     <p className="mt-2 text-xs text-muted-foreground">
                     Candidate ID: {result.candidateId ?? 'Unavailable'} · Application ID: {result.applicationId ?? 'Unavailable'}
                     </p>
@@ -453,7 +453,7 @@ function EvaluationViewer({
                 )}
               </div>
             </DialogHeader>
-            <ScrollArea className="h-[70vh] px-7 py-6">
+            <ScrollArea className="h-[50vh] px-4 py-4 sm:h-[70vh] sm:px-7 sm:py-6">
               <div className="space-y-6">
                 <div className="rounded-[1.75rem] border border-[#42C74A]/16 bg-[linear-gradient(135deg,_rgba(236,253,240,0.95),_rgba(255,255,255,0.96))] px-5 py-5 shadow-[0_18px_45px_-32px_rgba(66,199,74,0.35)]">
                   <div className="flex flex-wrap items-center gap-3">
@@ -467,7 +467,7 @@ function EvaluationViewer({
                   )}
                 </div>
 
-                <div className="grid gap-2 grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-5">
                   {result.scoreBreakdown && Object.entries(result.scoreBreakdown).map(([key, value]) => (
                     <Card key={key} className="border-slate-200/80 bg-white shadow-[0_18px_36px_-30px_rgba(15,23,42,0.18)]">
                       <CardContent className="p-3.5">
@@ -539,8 +539,8 @@ function EvaluationViewer({
             </ScrollArea>
           </div>
 
-          <ScrollArea className="h-[70vh] bg-[linear-gradient(180deg,_rgba(240,244,248,0.72),_rgba(244,248,251,0.92))]">
-            <div className="px-6 py-6">
+          <ScrollArea className="h-[42vh] bg-[linear-gradient(180deg,_rgba(240,244,248,0.72),_rgba(244,248,251,0.92))] sm:h-[58vh] lg:h-[70vh]">
+            <div className="px-4 py-4 sm:px-6 sm:py-6">
             <div className="space-y-5">
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Recruiter Workflow</p>
@@ -2109,7 +2109,7 @@ export function ResumeRetriever() {
       <Card className="overflow-hidden rounded-[2rem] border-white/8 bg-[rgba(8,12,28,0.88)] shadow-[0_40px_120px_-56px_rgba(0,0,0,0.9)] backdrop-blur-xl">
         <div className={`grid gap-0 ${isGreenhouseConnected ? '' : 'lg:grid-cols-[1.1fr_0.9fr]'}`}>
           <div
-            className={`relative overflow-hidden bg-[linear-gradient(180deg,_rgba(15,24,53,0.92)_0%,_rgba(20,31,63,0.9)_52%,_rgba(23,35,65,0.86)_100%)] px-8 py-9 ${
+            className={`relative overflow-hidden bg-[linear-gradient(180deg,_rgba(15,24,53,0.92)_0%,_rgba(20,31,63,0.9)_52%,_rgba(23,35,65,0.86)_100%)] px-5 py-6 sm:px-8 sm:py-9 ${
               isGreenhouseConnected ? '' : 'border-b border-white/10 lg:border-b-0 lg:border-r lg:border-white/10'
             }`}
           >
@@ -2122,15 +2122,15 @@ export function ResumeRetriever() {
                   <Sparkles className="h-3.5 w-3.5" />
                   Recruiter Copilot
                 </div>
-                <div className="flex flex-wrap items-center gap-5">
+                <div className="flex flex-wrap items-center gap-4 sm:gap-5">
                   <div className="relative flex items-center justify-center rounded-full">
                     <div className="pointer-events-none absolute h-36 w-36 rounded-full bg-[radial-gradient(circle,_rgba(127,220,138,0.24),_rgba(127,220,138,0.05)_60%,_transparent_100%)] blur-2xl" />
-                    <Image src="/wasabi-logo.jpeg" alt="Wasabi Technologies logo" width={228} height={92} className="relative h-[5rem] w-auto max-w-[14rem] object-contain mix-blend-screen" />
+                    <Image src="/wasabi-logo.jpeg" alt="Wasabi Technologies logo" width={228} height={92} className="relative h-[4.2rem] w-auto max-w-[12rem] object-contain mix-blend-screen sm:h-[5rem] sm:max-w-[14rem]" />
                   </div>
                   <div className="space-y-2">
-                    <p className="text-base font-semibold uppercase tracking-[0.32em] text-[#7fdc8a]">Wasabi Technologies</p>
-                      <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-[3.45rem]">RRE</h1>
-                      <p className="max-w-2xl text-base leading-7 text-white [text-shadow:0_1px_10px_rgba(4,10,24,0.38)]">
+                    <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#7fdc8a] sm:text-base sm:tracking-[0.32em]">Wasabi Technologies</p>
+                      <h1 className="text-[2.25rem] font-semibold tracking-tight text-white sm:text-[3.45rem]">RRE</h1>
+                      <p className="max-w-2xl text-sm leading-6 text-white [text-shadow:0_1px_10px_rgba(4,10,24,0.38)] sm:text-base sm:leading-7">
                         Pull candidates from Greenhouse, rank them with AI, annotate recruiter notes, compare finalists, and move faster with cleaner Wasabi-branded outreach.
                       </p>
                       <div className="flex flex-wrap gap-2 pt-2">
@@ -2155,7 +2155,7 @@ export function ResumeRetriever() {
               </div>
             </div>
 
-            <div className="relative z-10 mt-9 grid gap-4 sm:grid-cols-3">
+            <div className="relative z-10 mt-7 grid gap-3 sm:mt-9 sm:grid-cols-3 sm:gap-4">
               <SummaryMetric label="Candidates" value={String(metrics.total)} hint="Loaded into the current review workspace." tone="dark" />
               <SummaryMetric label="Avg Score" value={metrics.averageScore} hint="Average AI score across evaluated resumes." tone="dark" />
               <SummaryMetric label="Interview Ready" value={String(metrics.interviewReady)} hint="Candidates recommended for interview." tone="dark" />
@@ -2292,7 +2292,7 @@ export function ResumeRetriever() {
 
       {isGreenhouseConnected && (
         <div className="grid gap-6 xl:grid-cols-[420px_minmax(0,1fr)]">
-          <Card className="sticky top-6 self-start overflow-hidden rounded-[2rem] border-slate-200/90 bg-[rgba(255,255,255,0.97)] shadow-[0_22px_50px_-38px_rgba(15,23,42,0.32)]">
+          <Card className="self-start overflow-hidden rounded-[2rem] border-slate-200/90 bg-[rgba(255,255,255,0.97)] shadow-[0_22px_50px_-38px_rgba(15,23,42,0.32)] xl:sticky xl:top-6">
             <CardHeader>
               <div className="mb-2 flex flex-wrap gap-2">
                 <div className="rounded-full border border-[#42C74A]/18 bg-[#42C74A]/8 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#177a2a]">Workflow</div>
@@ -2442,7 +2442,7 @@ export function ResumeRetriever() {
               <CardDescription>Prioritize finalists, document recruiter judgment, and prepare follow-up actions.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <SummaryMetric label="Evaluated" value={String(metrics.scored)} hint="Resumes with AI output available." />
                 <SummaryMetric label="Top Bucket" value={String(metrics.topBucket)} hint="Candidates manually marked as top picks." />
                 <SummaryMetric label="Shortlist" value={String(selectedCandidates.size)} hint="Currently selected for bulk action." />
@@ -2520,7 +2520,7 @@ export function ResumeRetriever() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="flex flex-col gap-3 lg:flex-row">
+                    <div className="flex flex-col gap-3 xl:flex-row">
                       <Input
                         value={aiSearchQuery}
                         onChange={(event) => setAiSearchQuery(event.target.value)}
@@ -2535,7 +2535,7 @@ export function ResumeRetriever() {
                         placeholder='Try: "show candidates with client-facing solution design" or type keywords like "keyword1, keyword2, keyword3"'
                         className="flex-1"
                       />
-                      <div className="flex gap-2">
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:flex xl:gap-2">
                         <Button onClick={handleRunAiSearch} disabled={isRunningAiSearch || !aiSearchQuery.trim() || !isOpenAIReady}>
                           {isRunningAiSearch ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <Bot className="mr-2 h-4 w-4" />}
                           Run AI Search
@@ -2610,8 +2610,8 @@ export function ResumeRetriever() {
 
               {resumeResults.length > 0 && (
                 <div className="space-y-4">
-                  <div className="grid gap-3 md:grid-cols-5">
-                    <div className="relative md:col-span-2">
+                  <div className="grid gap-3 lg:grid-cols-5">
+                    <div className="relative lg:col-span-2">
                       <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Search candidate, stage, source..." className="pl-10" />
                     </div>
@@ -2654,7 +2654,7 @@ export function ResumeRetriever() {
                     </Select>
                   </div>
 
-                  <div className="grid gap-3 md:grid-cols-[1fr_auto_auto_auto_auto]">
+                  <div className="grid gap-3 xl:grid-cols-[1fr_auto_auto_auto_auto]">
                     <Select value={stageFilter} onValueChange={setStageFilter}>
                       <SelectTrigger>
                         <SelectValue placeholder="Stage" />
@@ -2669,7 +2669,7 @@ export function ResumeRetriever() {
                     <Button variant="outline" className="border-[#42C74A]/30 text-[#177a2a] hover:bg-[#42C74A]/8" onClick={() => applyBucketToSelected('top')} disabled={selectedCandidates.size === 0}>Top Picks</Button>
                     <Button variant="outline" className="border-[#42C74A]/20 text-slate-700 hover:bg-[#42C74A]/8" onClick={() => applyBucketToSelected('review')} disabled={selectedCandidates.size === 0}>Needs Review</Button>
                     <Button variant="outline" className="border-rose-200 text-rose-700 hover:bg-rose-50" onClick={() => applyBucketToSelected('reject')} disabled={selectedCandidates.size === 0}>Reject Bucket</Button>
-                    <div className="flex gap-2">
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                       <CandidateCompareDialog candidates={compareCandidates} />
                       <Button variant="outline" onClick={handleExportCsv}>
                         <FileDown className="mr-2 h-4 w-4" />
@@ -2687,6 +2687,7 @@ export function ResumeRetriever() {
                       <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{rankedResults.length} shown</p>
                     </div>
 
+                    <div className="hidden md:block">
                     <Table className="table-fixed">
                       <TableHeader className="bg-white">
                         <TableRow className="hover:bg-transparent">
@@ -2832,6 +2833,113 @@ export function ResumeRetriever() {
                         )}
                       </TableBody>
                     </Table>
+                    </div>
+
+                    <div className="space-y-3 p-4 md:hidden">
+                      {rankedResults.map((result) => (
+                        <div
+                          key={`mobile-${result.applicationId}-${result.fileName}`}
+                          className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 shadow-sm"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0 space-y-1">
+                              <p className="break-words text-base font-semibold text-slate-900">{result.candidateName}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {result.stageName || 'Unknown stage'} · {result.sourceName || 'Unknown source'}
+                              </p>
+                            </div>
+                            {typeof result.score === 'number' ? (
+                              <span className={`shrink-0 rounded-full px-3 py-1 text-sm font-semibold ${getScoreTone(result.score)}`}>
+                                {result.score}/10
+                              </span>
+                            ) : (
+                              <span className="shrink-0 text-xs text-muted-foreground">N/A</span>
+                            )}
+                          </div>
+
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {result.recommendation ? (
+                              <Badge className={getRecommendationTone(result.recommendation)}>
+                                {recommendationCopy[result.recommendation]}
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="border-slate-200 bg-white text-slate-500">
+                                {result.status === 'processing' ? 'Evaluating' : 'Not scored'}
+                              </Badge>
+                            )}
+                            <Badge variant="outline" className="border-slate-200 bg-white text-slate-700">
+                              {bucketCopy[result.bucket as CandidateBucket]}
+                            </Badge>
+                            {result.authenticityRisk && (
+                              <Badge variant="outline" className={getAuthenticityTone(result.authenticityRisk)}>
+                                {result.authenticityRisk === 'high' ? 'Verify carefully' : `${result.authenticityRisk} authenticity risk`}
+                              </Badge>
+                            )}
+                          </div>
+
+                          <div className="mt-3 text-sm">
+                            {result.status === 'error' ? (
+                              <span className="break-words text-rose-600">{result.error || 'Evaluation failed.'}</span>
+                            ) : result.status === 'processing' ? (
+                              <span className="text-sky-600">Evaluating...</span>
+                            ) : result.status === 'success' ? (
+                              <span className="text-emerald-600">Ready</span>
+                            ) : (
+                              <span className="text-muted-foreground">Queued</span>
+                            )}
+                          </div>
+
+                          <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                            {result.url && result.url !== '#' && (
+                              <ResumePreviewDialog url={result.url} fileName={result.fileName} />
+                            )}
+                            {result.status === 'success' && result.fullEvaluation ? (
+                              <EvaluationViewer
+                                result={result}
+                                notes={result.notes}
+                                bucket={result.bucket as CandidateBucket}
+                                greenhouseUsers={greenhouseUsers}
+                                outreachConfigured={Boolean(serverConfig.outreachConfigured)}
+                                notifyTaggedTeammate={notifyTaggedTeammate}
+                                noteAuthorId={selectedNoteAuthorId}
+                                taggedUserId={result.applicationId ? (taggedUserByApplication[result.applicationId] || 'none') : 'none'}
+                                onNotesChange={(notes) => result.applicationId && updateCandidateMeta(result.applicationId, { notes })}
+                                onBucketChange={(bucket) => result.applicationId && updateCandidateMeta(result.applicationId, { bucket })}
+                                onNoteAuthorChange={setSelectedNoteAuthorId}
+                                onTaggedUserChange={(userId) => {
+                                  if (!result.applicationId) return;
+                                  setTaggedUserByApplication((previous) => ({
+                                    ...previous,
+                                    [result.applicationId!]: userId,
+                                  }));
+                                }}
+                                onNotifyTaggedTeammateChange={setNotifyTaggedTeammate}
+                                onSaveGreenhouseNote={() => handleSaveGreenhouseNote(result, result.notes || '')}
+                                onExportPdf={() => handleExportToPdf(result.candidateName || 'candidate', result.fullEvaluation || '', result.interviewQuestions)}
+                                canGoPrevious={activeReviewIndex > 0}
+                                canGoNext={activeReviewIndex >= 0 && activeReviewIndex < reviewableResults.length - 1}
+                                onPrevious={() => goToAdjacentReview('previous')}
+                                onNext={() => goToAdjacentReview('next')}
+                                open={activeReviewApplicationId === result.applicationId}
+                                onOpenChange={(open) => {
+                                  if (open) {
+                                    openReviewForCandidate(result.applicationId);
+                                  } else if (activeReviewApplicationId === result.applicationId) {
+                                    setActiveReviewApplicationId(null);
+                                  }
+                                }}
+                              />
+                            ) : null}
+                            {result.status === 'error' && result.url && result.url !== '#' ? (
+                              <Button size="sm" variant="outline" onClick={() => handleRetryEvaluation(resumeResults.findIndex((item) => item.applicationId === result.applicationId))}>
+                                <RefreshCw className="mr-2 h-4 w-4" />
+                                Retry
+                              </Button>
+                            ) : null}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   {rejectionReasons.length > 0 && (
