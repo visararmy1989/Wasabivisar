@@ -167,6 +167,22 @@ function parseKeywordSearchTerms(query: string) {
     .filter((term) => term.length >= 2);
 }
 
+function escapeRegex(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function matchesExactKeywordTerm(content: string, term: string) {
+  const normalizedContent = content.toLowerCase();
+  const normalizedTerm = term.trim().toLowerCase();
+
+  if (!normalizedTerm) {
+    return false;
+  }
+
+  const pattern = new RegExp(`(^|[^a-z0-9])${escapeRegex(normalizedTerm)}([^a-z0-9]|$)`, 'i');
+  return pattern.test(normalizedContent);
+}
+
 function SummaryMetric({
   label,
   value,
@@ -305,6 +321,54 @@ function EvaluationViewer({
   onOpenChange: (open: boolean) => void;
 }) {
   const recommendation = result.recommendation ? recommendationCopy[result.recommendation] : 'Not available';
+  const [noteAuthorFilter, setNoteAuthorFilter] = useState('');
+  const [teammateFilter, setTeammateFilter] = useState('');
+
+  const filteredNoteAuthors = useMemo(
+    () =>
+      greenhouseUsers.filter((user) =>
+        getGreenhouseUserLabel(user).toLowerCase().includes(noteAuthorFilter.trim().toLowerCase())
+      ),
+    [greenhouseUsers, noteAuthorFilter]
+  );
+
+  const filteredTaggedTeammates = useMemo(
+    () =>
+      greenhouseUsers.filter((user) =>
+        getGreenhouseUserLabel(user).toLowerCase().includes(teammateFilter.trim().toLowerCase())
+      ),
+    [greenhouseUsers, teammateFilter]
+  );
+
+  useEffect(() => {
+    const normalized = noteAuthorFilter.trim().toLowerCase();
+    if (!normalized) {
+      return;
+    }
+
+    const exactMatch = filteredNoteAuthors.find(
+      (user) => getGreenhouseUserLabel(user).toLowerCase() === normalized
+    );
+
+    if (exactMatch && String(exactMatch.id) !== noteAuthorId) {
+      onNoteAuthorChange(String(exactMatch.id));
+    }
+  }, [filteredNoteAuthors, noteAuthorFilter, noteAuthorId, onNoteAuthorChange]);
+
+  useEffect(() => {
+    const normalized = teammateFilter.trim().toLowerCase();
+    if (!normalized) {
+      return;
+    }
+
+    const exactMatch = filteredTaggedTeammates.find(
+      (user) => getGreenhouseUserLabel(user).toLowerCase() === normalized
+    );
+
+    if (exactMatch && String(exactMatch.id) !== taggedUserId) {
+      onTaggedUserChange(String(exactMatch.id));
+    }
+  }, [filteredTaggedTeammates, onTaggedUserChange, taggedUserId, teammateFilter]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -314,27 +378,37 @@ function EvaluationViewer({
           Review
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-6xl p-0 overflow-hidden">
-        <div className="grid max-h-[88vh] grid-cols-1 lg:grid-cols-[1.25fr_0.75fr]">
-          <div className="border-b bg-white lg:border-b-0 lg:border-r">
-            <DialogHeader className="border-b bg-slate-50/80 px-6 py-5">
+      <DialogContent className="max-w-7xl overflow-hidden border border-white/20 bg-[rgba(245,248,252,0.98)] p-0 shadow-[0_40px_120px_-56px_rgba(15,23,42,0.55)]">
+        <div className="grid max-h-[88vh] grid-cols-1 lg:grid-cols-[1.22fr_0.78fr]">
+          <div className="border-b border-slate-200/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(246,249,252,0.96))] lg:border-b-0 lg:border-r">
+            <DialogHeader className="border-b border-slate-200/80 bg-[linear-gradient(180deg,_rgba(250,252,255,0.98),_rgba(242,247,251,0.9))] px-7 py-6">
               <div className="flex items-start justify-between gap-4">
-                <div>
-                  <DialogTitle className="text-2xl">{result.candidateName}</DialogTitle>
-                  <p className="text-xs text-muted-foreground">
+                <div className="space-y-3">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 shadow-sm">
+                    Application Review
+                  </div>
+                  <div>
+                    <DialogTitle className="text-[2rem] leading-none text-slate-950">{result.candidateName}</DialogTitle>
+                    <p className="mt-2 text-xs text-muted-foreground">
                     Candidate ID: {result.candidateId ?? 'Unavailable'} · Application ID: {result.applicationId ?? 'Unavailable'}
-                  </p>
+                    </p>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button type="button" variant="outline" size="icon" onClick={onPrevious} disabled={!canGoPrevious}>
+                  <Button type="button" variant="outline" size="icon" onClick={onPrevious} disabled={!canGoPrevious} className="rounded-2xl border-slate-200 bg-white/90 shadow-sm">
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
-                  <Button type="button" variant="outline" size="icon" onClick={onNext} disabled={!canGoNext}>
+                  <Button type="button" variant="outline" size="icon" onClick={onNext} disabled={!canGoNext} className="rounded-2xl border-slate-200 bg-white/90 shadow-sm">
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
-              <div className="text-sm text-muted-foreground flex flex-wrap items-center gap-2 pt-2">
+              <div className="flex flex-wrap gap-2 pt-1">
+                <div className="rounded-full border border-[#42C74A]/20 bg-[#42C74A]/8 px-3 py-1 text-xs font-medium text-[#177a2a]">Overview</div>
+                <div className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600">Signals</div>
+                <div className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600">Detailed Review</div>
+              </div>
+              <div className="text-sm text-muted-foreground flex flex-wrap items-center gap-2 pt-3">
                 <Badge variant="outline">{result.stageName || 'Unknown stage'}</Badge>
                 {result.sourceName && result.sourceName.toLowerCase() !== 'linkedin' ? (
                   <Badge variant="outline">{result.sourceName}</Badge>
@@ -379,21 +453,24 @@ function EvaluationViewer({
                 )}
               </div>
             </DialogHeader>
-            <ScrollArea className="h-[70vh] px-6 py-5">
+            <ScrollArea className="h-[70vh] px-7 py-6">
               <div className="space-y-6">
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className={`rounded-full px-4 py-2 text-sm font-semibold ${getScoreTone(result.score)}`}>
+                <div className="rounded-[1.75rem] border border-[#42C74A]/16 bg-[linear-gradient(135deg,_rgba(236,253,240,0.95),_rgba(255,255,255,0.96))] px-5 py-5 shadow-[0_18px_45px_-32px_rgba(66,199,74,0.35)]">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className={`rounded-full px-4 py-2 text-sm font-semibold ${getScoreTone(result.score)}`}>
                     Score {typeof result.score === 'number' ? `${result.score}/10` : 'N/A'}
+                    </div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Recommended next step</div>
                   </div>
                   {result.nextStepSuggestion && (
-                    <p className="text-sm text-slate-600">{result.nextStepSuggestion}</p>
+                    <p className="mt-3 text-sm leading-7 text-slate-700">{result.nextStepSuggestion}</p>
                   )}
                 </div>
 
                 <div className="grid gap-2 grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                   {result.scoreBreakdown && Object.entries(result.scoreBreakdown).map(([key, value]) => (
-                    <Card key={key} className="border-slate-200 bg-slate-50/80 shadow-none">
-                      <CardContent className="p-3">
+                    <Card key={key} className="border-slate-200/80 bg-white shadow-[0_18px_36px_-30px_rgba(15,23,42,0.18)]">
+                      <CardContent className="p-3.5">
                         <p className="break-words text-[10px] uppercase leading-tight tracking-[0.1em] text-muted-foreground sm:text-[11px]">
                           {key.replace(/([A-Z])/g, ' $1').trim()}
                         </p>
@@ -404,7 +481,7 @@ function EvaluationViewer({
                 </div>
 
                 <div className="grid gap-4 lg:grid-cols-2">
-                  <Card className="border-emerald-100 bg-emerald-50/70 shadow-none">
+                  <Card className="border-emerald-100 bg-[linear-gradient(180deg,_rgba(236,253,245,0.92),_rgba(255,255,255,0.98))] shadow-[0_18px_40px_-30px_rgba(16,185,129,0.18)]">
                     <CardHeader className="pb-3">
                       <CardTitle className="text-base text-emerald-900">Strengths</CardTitle>
                     </CardHeader>
@@ -416,7 +493,7 @@ function EvaluationViewer({
                       </ul>
                     </CardContent>
                   </Card>
-                  <Card className="border-amber-100 bg-amber-50/70 shadow-none">
+                  <Card className="border-amber-100 bg-[linear-gradient(180deg,_rgba(255,251,235,0.92),_rgba(255,255,255,0.98))] shadow-[0_18px_40px_-30px_rgba(245,158,11,0.18)]">
                     <CardHeader className="pb-3">
                       <CardTitle className="text-base text-amber-900">Risks And Gaps</CardTitle>
                     </CardHeader>
@@ -431,7 +508,7 @@ function EvaluationViewer({
                 </div>
 
                 {result.authenticitySignals && result.authenticitySignals.length > 0 && (
-                  <Card className="border-rose-100 bg-rose-50/70 shadow-none">
+                  <Card className="border-rose-100 bg-[linear-gradient(180deg,_rgba(255,241,242,0.92),_rgba(255,255,255,0.98))] shadow-[0_18px_40px_-30px_rgba(244,63,94,0.16)]">
                     <CardHeader className="pb-3">
                       <CardTitle className="text-base text-rose-900">Verification Signals</CardTitle>
                     </CardHeader>
@@ -446,7 +523,7 @@ function EvaluationViewer({
                 )}
 
                 {result.fullEvaluation && (
-                  <Card className="border-slate-200 shadow-none">
+                  <Card className="border-slate-200/80 bg-white shadow-[0_18px_40px_-34px_rgba(15,23,42,0.18)]">
                     <CardHeader className="pb-3">
                       <CardTitle className="text-base">Detailed Evaluation</CardTitle>
                     </CardHeader>
@@ -462,15 +539,16 @@ function EvaluationViewer({
             </ScrollArea>
           </div>
 
-          <ScrollArea className="h-[70vh] bg-slate-50/60">
-            <div className="px-6 py-5">
+          <ScrollArea className="h-[70vh] bg-[linear-gradient(180deg,_rgba(240,244,248,0.72),_rgba(244,248,251,0.92))]">
+            <div className="px-6 py-6">
             <div className="space-y-5">
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Recruiter Workflow</p>
                 <h3 className="mt-2 text-xl font-semibold text-slate-900">Decision Support</h3>
+                <p className="mt-1 text-sm text-slate-600">Capture judgment, route the candidate, and prepare the next step without leaving review.</p>
               </div>
 
-              <Card className="border-white/70 bg-white/90 shadow-sm">
+              <Card className="border-white/70 bg-white/92 shadow-[0_18px_44px_-34px_rgba(15,23,42,0.24)]">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base">Shortlist Bucket</CardTitle>
                 </CardHeader>
@@ -489,19 +567,41 @@ function EvaluationViewer({
                 </CardContent>
               </Card>
 
-              <Card className="border-white/70 bg-white/90 shadow-sm">
+              <Card className="border-white/70 bg-white/92 shadow-[0_18px_44px_-34px_rgba(15,23,42,0.24)]">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base">Recruiter Notes</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="space-y-2">
                     <Label>Save note as</Label>
+                    <Input
+                      value={noteAuthorFilter}
+                      onChange={(event) => setNoteAuthorFilter(event.target.value)}
+                      placeholder="Filter Greenhouse users..."
+                    />
+                    {noteAuthorFilter.trim() && filteredNoteAuthors.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {filteredNoteAuthors.slice(0, 4).map((user) => (
+                          <button
+                            key={user.id}
+                            type="button"
+                            onClick={() => {
+                              onNoteAuthorChange(String(user.id));
+                              setNoteAuthorFilter(getGreenhouseUserLabel(user));
+                            }}
+                            className="rounded-full bg-[#42C74A]/15 px-3 py-1 text-xs font-medium text-[#177a2a] transition hover:bg-[#42C74A]/22"
+                          >
+                            {mentionShortLabel(getGreenhouseUserLabel(user))}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                     <Select value={noteAuthorId} onValueChange={onNoteAuthorChange}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select Greenhouse user" />
                       </SelectTrigger>
                       <SelectContent>
-                        {greenhouseUsers.map((user) => (
+                        {filteredNoteAuthors.map((user) => (
                           <SelectItem key={user.id} value={String(user.id)}>
                             {getGreenhouseUserLabel(user)}
                           </SelectItem>
@@ -511,13 +611,35 @@ function EvaluationViewer({
                   </div>
                   <div className="space-y-2">
                     <Label>Tag teammate in note</Label>
+                    <Input
+                      value={teammateFilter}
+                      onChange={(event) => setTeammateFilter(event.target.value)}
+                      placeholder="Filter teammates..."
+                    />
+                    {teammateFilter.trim() && filteredTaggedTeammates.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {filteredTaggedTeammates.slice(0, 4).map((user) => (
+                          <button
+                            key={user.id}
+                            type="button"
+                            onClick={() => {
+                              onTaggedUserChange(String(user.id));
+                              setTeammateFilter(getGreenhouseUserLabel(user));
+                            }}
+                            className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-200"
+                          >
+                            {mentionShortLabel(getGreenhouseUserLabel(user))}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                     <Select value={taggedUserId} onValueChange={onTaggedUserChange}>
                       <SelectTrigger>
                         <SelectValue placeholder="Optional teammate mention" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="none">No teammate tag</SelectItem>
-                        {greenhouseUsers.map((user) => (
+                        {filteredTaggedTeammates.map((user) => (
                           <SelectItem key={user.id} value={String(user.id)}>
                             {getGreenhouseUserLabel(user)}
                           </SelectItem>
@@ -559,7 +681,7 @@ function EvaluationViewer({
                 </CardContent>
               </Card>
 
-              <Card className="border-white/70 bg-white/90 shadow-sm">
+              <Card className="border-white/70 bg-white/92 shadow-[0_18px_44px_-34px_rgba(15,23,42,0.24)]">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base">Interview Kit</CardTitle>
                 </CardHeader>
@@ -677,6 +799,7 @@ export function ResumeRetriever() {
   const [recommendationFilter, setRecommendationFilter] = useState('all');
   const [bucketFilter, setBucketFilter] = useState('all');
   const [stageFilter, setStageFilter] = useState('all');
+  const [scoreFilter, setScoreFilter] = useState('all');
   const [candidateMeta, setCandidateMeta] = useState<CandidateMeta>({});
   const [selectedCandidates, setSelectedCandidates] = useState<Set<number>>(new Set());
   const [resumeResults, setResumeResults] = useState<ResumeResult[]>([]);
@@ -830,10 +953,13 @@ export function ResumeRetriever() {
       const matchesRecommendation = recommendationFilter === 'all' || result.recommendation === recommendationFilter;
       const matchesBucket = bucketFilter === 'all' || result.bucket === bucketFilter;
       const matchesStage = stageFilter === 'all' || result.stageName === stageFilter;
+      const matchesScore =
+        scoreFilter === 'all' ||
+        (typeof result.score === 'number' && Math.round(result.score) === Number(scoreFilter));
       const matchesAiSearch = !showOnlyAiMatches || (result.applicationId ? aiMatchedIds.has(result.applicationId) : false);
-      return matchesSearch && matchesRecommendation && matchesBucket && matchesStage && matchesAiSearch;
+      return matchesSearch && matchesRecommendation && matchesBucket && matchesStage && matchesScore && matchesAiSearch;
     });
-  }, [aiMatchedIds, bucketFilter, enrichedResults, recommendationFilter, searchTerm, showOnlyAiMatches, stageFilter]);
+  }, [aiMatchedIds, bucketFilter, enrichedResults, recommendationFilter, scoreFilter, searchTerm, showOnlyAiMatches, stageFilter]);
 
   const rankedResults = useMemo(() => {
     return [...filteredResults].sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
@@ -1546,33 +1672,32 @@ export function ResumeRetriever() {
             { label: 'stage', value: result.stageName || '' },
           ];
 
-          const matchedTerms = keywordTerms.filter((term) => {
-            const lowerTerm = term.toLowerCase();
-            return searchableSections.some((section) => section.value.toLowerCase().includes(lowerTerm));
-          });
+          const matchedTerms = keywordTerms.filter((term) =>
+            searchableSections.some((section) => matchesExactKeywordTerm(section.value, term))
+          );
 
-          if (matchedTerms.length === 0) {
+          if (matchedTerms.length !== keywordTerms.length) {
             return null;
           }
 
           const matchedSections = searchableSections
             .filter((section) =>
-              matchedTerms.some((term) => section.value.toLowerCase().includes(term.toLowerCase()))
+              matchedTerms.some((term) => matchesExactKeywordTerm(section.value, term))
             )
             .map((section) => section.label);
 
           return {
             applicationId: result.applicationId,
             candidateName: result.candidateName || `Application ${result.applicationId}`,
-            rationale: `Matched keyword${matchedTerms.length === 1 ? '' : 's'}: ${matchedTerms.join(', ')}${matchedSections.length ? ` in ${Array.from(new Set(matchedSections)).join(', ')}` : ''}.`,
+            rationale: `Matched exact keyword${matchedTerms.length === 1 ? '' : 's'}: ${matchedTerms.join(', ')}${matchedSections.length ? ` in ${Array.from(new Set(matchedSections)).join(', ')}` : ''}.`,
           };
         })
         .filter((match): match is CandidateSearchMatch => Boolean(match));
 
       setAiSearchSummary(
         keywordMatches.length > 0
-          ? `Keyword search found ${keywordMatches.length} candidate match${keywordMatches.length === 1 ? '' : 'es'} for: ${keywordTerms.join(', ')}.`
-          : `No candidates matched these keywords in the screened resume analysis: ${keywordTerms.join(', ')}.`
+          ? `Exact keyword search found ${keywordMatches.length} candidate match${keywordMatches.length === 1 ? '' : 'es'} for: ${keywordTerms.join(', ')}. Every keyword had to be present.`
+          : `No candidates matched all exact keywords in the screened resume analysis: ${keywordTerms.join(', ')}.`
       );
       setAiSearchMatches(keywordMatches);
       setShowOnlyAiMatches(keywordMatches.length > 0);
@@ -1981,14 +2106,16 @@ export function ResumeRetriever() {
 
   return (
     <div className="w-full max-w-[1500px] space-y-7">
-      <Card className="overflow-hidden border-white/8 bg-[rgba(8,12,28,0.86)] shadow-[0_40px_120px_-56px_rgba(0,0,0,0.9)] backdrop-blur-xl">
+      <Card className="overflow-hidden rounded-[2rem] border-white/8 bg-[rgba(8,12,28,0.88)] shadow-[0_40px_120px_-56px_rgba(0,0,0,0.9)] backdrop-blur-xl">
         <div className={`grid gap-0 ${isGreenhouseConnected ? '' : 'lg:grid-cols-[1.1fr_0.9fr]'}`}>
           <div
-            className={`relative overflow-hidden bg-[linear-gradient(180deg,_rgba(15,24,53,0.9)_0%,_rgba(20,31,63,0.88)_50%,_rgba(23,35,65,0.84)_100%)] px-8 py-9 ${
+            className={`relative overflow-hidden bg-[linear-gradient(180deg,_rgba(15,24,53,0.92)_0%,_rgba(20,31,63,0.9)_52%,_rgba(23,35,65,0.86)_100%)] px-8 py-9 ${
               isGreenhouseConnected ? '' : 'border-b border-white/10 lg:border-b-0 lg:border-r lg:border-white/10'
             }`}
           >
             <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,_rgba(255,255,255,0.02),_rgba(255,255,255,0.01))]" />
+            <div className="pointer-events-none absolute -left-16 top-14 h-24 w-72 rounded-full bg-[radial-gradient(circle,_rgba(255,255,255,0.16),_rgba(255,255,255,0.04)_55%,_transparent_100%)] blur-xl" />
+            <div className="pointer-events-none absolute right-6 top-10 h-44 w-44 rounded-full border border-white/10 bg-[radial-gradient(circle,_rgba(127,220,138,0.08),_transparent_70%)]" />
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="relative z-10 space-y-5">
                 <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/8 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-white/80">
@@ -2002,10 +2129,15 @@ export function ResumeRetriever() {
                   </div>
                   <div className="space-y-2">
                     <p className="text-base font-semibold uppercase tracking-[0.32em] text-[#7fdc8a]">Wasabi Technologies</p>
-                      <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl">RRE</h1>
-                      <p className="max-w-2xl text-base leading-7 text-white">
+                      <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-[3.45rem]">RRE</h1>
+                      <p className="max-w-2xl text-base leading-7 text-white [text-shadow:0_1px_10px_rgba(4,10,24,0.38)]">
                         Pull candidates from Greenhouse, rank them with AI, annotate recruiter notes, compare finalists, and move faster with cleaner Wasabi-branded outreach.
                       </p>
+                      <div className="flex flex-wrap gap-2 pt-2">
+                        <div className="rounded-full border border-white/12 bg-white/10 px-3 py-1 text-xs font-medium text-white/90">Screen faster</div>
+                        <div className="rounded-full border border-white/12 bg-white/10 px-3 py-1 text-xs font-medium text-white/90">Review with context</div>
+                        <div className="rounded-full border border-white/12 bg-white/10 px-3 py-1 text-xs font-medium text-white/90">Coordinate recruiter actions</div>
+                      </div>
                     </div>
                   </div>
               </div>
@@ -2036,18 +2168,33 @@ export function ResumeRetriever() {
               <div className="pointer-events-none absolute -right-8 top-10 h-40 w-40 rounded-full bg-[radial-gradient(circle,_rgba(66,199,74,0.18),_transparent_70%)] blur-2xl" />
               <div className="pointer-events-none absolute -left-12 bottom-0 h-44 w-44 rounded-full bg-[radial-gradient(circle,_rgba(112,173,255,0.2),_transparent_70%)] blur-3xl" />
 
-              <div className="relative mx-auto max-w-[560px] rounded-[2rem] border border-white/35 bg-[linear-gradient(180deg,_rgba(255,255,255,0.82),_rgba(246,250,252,0.72))] p-6 shadow-[0_28px_80px_-42px_rgba(8,12,28,0.72)] backdrop-blur-xl sm:p-8">
+              <div className="relative mx-auto max-w-[560px] rounded-[2.1rem] border border-white/35 bg-[linear-gradient(180deg,_rgba(255,255,255,0.82),_rgba(246,250,252,0.72))] p-6 shadow-[0_28px_80px_-42px_rgba(8,12,28,0.72)] backdrop-blur-xl sm:p-8">
                 <div className="space-y-6">
                   <div className="space-y-4 text-center">
                     <div className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/65 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500 shadow-sm">
                       <Sparkles className="h-3.5 w-3.5 text-[#177a2a]" />
-                      Secure Access
+                      Secure Workspace Access
                     </div>
                     <div className="space-y-2">
                       <h2 className="text-3xl font-semibold tracking-tight text-slate-950">Welcome Back</h2>
                       <p className="mx-auto max-w-md text-sm leading-6 text-slate-600">
                         Connect your Greenhouse and OpenAI session to start screening candidates in the Wasabi cloud recruiting workspace.
                       </p>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-3 rounded-[1.5rem] border border-white/70 bg-white/58 p-4 sm:grid-cols-3">
+                    <div className="rounded-2xl bg-white/85 px-4 py-3 text-left shadow-sm">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Step 1</p>
+                      <p className="mt-2 text-sm font-medium text-slate-900">Connect ATS</p>
+                    </div>
+                    <div className="rounded-2xl bg-white/85 px-4 py-3 text-left shadow-sm">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Step 2</p>
+                      <p className="mt-2 text-sm font-medium text-slate-900">Enable AI scoring</p>
+                    </div>
+                    <div className="rounded-2xl bg-white/85 px-4 py-3 text-left shadow-sm">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Step 3</p>
+                      <p className="mt-2 text-sm font-medium text-slate-900">Load jobs and review</p>
                     </div>
                   </div>
 
@@ -2145,8 +2292,12 @@ export function ResumeRetriever() {
 
       {isGreenhouseConnected && (
         <div className="grid gap-6 xl:grid-cols-[420px_minmax(0,1fr)]">
-          <Card className="sticky top-6 self-start overflow-hidden border-slate-200/90 bg-[rgba(255,255,255,0.97)] shadow-[0_22px_50px_-38px_rgba(15,23,42,0.32)]">
+          <Card className="sticky top-6 self-start overflow-hidden rounded-[2rem] border-slate-200/90 bg-[rgba(255,255,255,0.97)] shadow-[0_22px_50px_-38px_rgba(15,23,42,0.32)]">
             <CardHeader>
+              <div className="mb-2 flex flex-wrap gap-2">
+                <div className="rounded-full border border-[#42C74A]/18 bg-[#42C74A]/8 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#177a2a]">Workflow</div>
+                <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Job setup</div>
+              </div>
               <CardTitle className="flex items-center gap-2 text-2xl">
                 <Briefcase className="h-5 w-5 text-teal-600" />
                 Job Setup
@@ -2276,8 +2427,14 @@ export function ResumeRetriever() {
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200/90 bg-[rgba(255,255,255,0.97)] shadow-[0_24px_56px_-42px_rgba(15,23,42,0.32)]">
+          <Card className="rounded-[2rem] border-slate-200/90 bg-[rgba(255,255,255,0.97)] shadow-[0_24px_56px_-42px_rgba(15,23,42,0.32)]">
             <CardHeader>
+              <div className="mb-2 flex flex-wrap gap-2">
+                <div className="rounded-full border border-[#42C74A]/18 bg-[#42C74A]/8 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#177a2a]">Workspace</div>
+                <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Candidates</div>
+                <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Search</div>
+                <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Decision support</div>
+              </div>
               <CardTitle className="flex items-center gap-2 text-2xl">
                 <BarChart3 className="h-5 w-5 text-slate-800" />
                 Screening Dashboard
@@ -2453,7 +2610,7 @@ export function ResumeRetriever() {
 
               {resumeResults.length > 0 && (
                 <div className="space-y-4">
-                  <div className="grid gap-3 md:grid-cols-4">
+                  <div className="grid gap-3 md:grid-cols-5">
                     <div className="relative md:col-span-2">
                       <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Search candidate, stage, source..." className="pl-10" />
@@ -2480,6 +2637,19 @@ export function ResumeRetriever() {
                         <SelectItem value="review">Needs review</SelectItem>
                         <SelectItem value="reject">Reject</SelectItem>
                         <SelectItem value="none">Unsorted</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={scoreFilter} onValueChange={setScoreFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Score" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All scores</SelectItem>
+                        {[10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map((score) => (
+                          <SelectItem key={score} value={String(score)}>
+                            Score {score}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
